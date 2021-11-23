@@ -7,10 +7,10 @@ from typing import Any
 
 import pandas
 
-from .camera import EzvizCamera
-from .client import EzvizClient
-from .constants import DefenseModeType
-from .mqtt import MQTTClient
+from camera import EzvizCamera
+from client import EzvizClient
+from constants import DefenseModeType
+from mqtt import MQTTClient
 
 
 def main() -> Any:

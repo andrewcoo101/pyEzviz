@@ -8,9 +8,9 @@ from uuid import uuid4
 
 import requests
 
-from .camera import EzvizCamera
-from .cas import EzvizCAS
-from .constants import (
+from camera import EzvizCamera
+from cas import EzvizCAS
+from constants import (
     DEFAULT_TIMEOUT,
     FEATURE_CODE,
     MAX_RETRIES,
@@ -18,7 +18,7 @@ from .constants import (
     DefenseModeType,
     DeviceCatagories,
 )
-from .exceptions import (
+from exceptions import (
     EzvizAuthTokenExpired,
     EzvizAuthVerificationCode,
     HTTPError,

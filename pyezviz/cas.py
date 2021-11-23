@@ -9,8 +9,8 @@ import ssl
 from Crypto.Cipher import AES
 import xmltodict
 
-from .constants import FEATURE_CODE, XOR_KEY
-from .exceptions import InvalidHost
+from constants import FEATURE_CODE, XOR_KEY
+from exceptions import InvalidHost
 
 
 def xor_enc_dec(msg, xor_key=XOR_KEY):

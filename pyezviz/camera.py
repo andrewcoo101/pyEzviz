@@ -4,8 +4,8 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, Any
 
-from .constants import DeviceCatagories, DeviceSwitchType, SoundMode
-from .exceptions import PyEzvizError
+from constants import DeviceCatagories, DeviceSwitchType, SoundMode
+from exceptions import PyEzvizError
 
 if TYPE_CHECKING:
     from .client import EzvizClient

@@ -8,8 +8,8 @@ import time
 import paho.mqtt.client as mqtt
 import requests
 
-from .constants import DEFAULT_TIMEOUT, FEATURE_CODE
-from .exceptions import HTTPError, InvalidURL, PyEzvizError
+from constants import DEFAULT_TIMEOUT, FEATURE_CODE
+from exceptions import HTTPError, InvalidURL, PyEzvizError
 
 API_ENDPOINT_SERVER_INFO = "/v3/configurations/system/info"
 API_ENDPOINT_REGISTER_MQTT = "/v1/getClientId"

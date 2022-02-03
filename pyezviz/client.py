@@ -26,6 +26,8 @@ from exceptions import (
     PyEzvizError,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 API_ENDPOINT_CLOUDDEVICES = "/api/cloud/v2/cloudDevices/getAll"
 API_ENDPOINT_PAGELIST = "/v3/userdevices/v1/resources/pagelist"
 API_ENDPOINT_DEVICES = "/v3/devices/"
@@ -48,6 +50,7 @@ API_ENDPOINT_SEND_CODE = "/v3/sms/nologin/checkcode"
 
 API_ENDPOINT_V3_ALARMS = "/v3/alarms/"
 API_ENDPOINT_DO_NOT_DISTURB = "/1/nodisturb"
+
 
 class EzvizClient:
     """Initialize api client object."""
@@ -137,9 +140,8 @@ class EzvizClient:
 
         if json_result["meta"]["code"] == 1100:
             self._token["api_url"] = json_result["loginArea"]["apiDomain"]
-            print("Region incorrect!")
-            print(f"Your region url: {self._token['api_url']}")
-            self.close_session()
+            _LOGGER.warning("Region incorrect!")
+            _LOGGER.warning("Your region url: %s", self._token["api_url"])
             return self.login()
 
         if json_result["meta"]["code"] == 1013:
@@ -499,6 +501,7 @@ class EzvizClient:
             DeviceCatagories.BATTERY_CAMERA_DEVICE_CATEGORY.value,
             DeviceCatagories.DOORBELL_DEVICE_CATEGORY.value,
             DeviceCatagories.BASE_STATION_DEVICE_CATEGORY.value,
+            DeviceCatagories.CAT_EYE_CATEGORY.value,
         ]
 
         for device, data in devices.items():
@@ -666,6 +669,9 @@ class EzvizClient:
 
             if json_result["meta"].get("code") == 200:
 
+                self._session.headers["sessionId"] = json_result["sessionInfo"][
+                    "sessionId"
+                ]
                 self._token["session_id"] = str(json_result["sessionInfo"]["sessionId"])
                 self._token["rf_session_id"] = str(
                     json_result["sessionInfo"]["refreshSessionId"]
@@ -708,7 +714,7 @@ class EzvizClient:
 
         except requests.HTTPError as err:
             if err.response.status_code == 401:
-                print("Token is no longer valid. Already logged out?")
+                _LOGGER.warning("Token is no longer valid. Already logged out?")
                 return True
             raise HTTPError from err
 
@@ -838,7 +844,7 @@ class EzvizClient:
         enable: int = 1,
         max_retries: int = 0,
     ) -> bool | str:
-        """Set detection sensibility."""
+        """Set do not disturb on camera with spesified serial."""
         if max_retries > MAX_RETRIES:
             raise PyEzvizError("Can't gather proper data. Max retries exceeded.")
 
@@ -849,11 +855,7 @@ class EzvizClient:
                 + API_ENDPOINT_V3_ALARMS
                 + serial
                 + API_ENDPOINT_DO_NOT_DISTURB,
-                data={
-                    'enable': enable,
-                    'channelNo': "1",
-                    'deviceSerial': serial
-                },
+                data={"enable": enable, "channelNo": "1", "deviceSerial": serial},
                 timeout=self._timeout,
             )
             req.raise_for_status()
@@ -862,9 +864,7 @@ class EzvizClient:
             if err.response.status_code == 401:
                 # session is wrong, need to re-log-in
                 self.login()
-                return self.do_not_disturb(
-                    serial, enable, max_retries + 1
-                )
+                return self.do_not_disturb(serial, enable, max_retries + 1)
 
             raise HTTPError from err
 

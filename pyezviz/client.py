@@ -79,9 +79,20 @@ class EzvizClient:
         }
         self._timeout = timeout
         self._cameras: dict[str, Any] = {}
+        self._mfaCode = None
+
+    def setMfaCode(self, mfaCode: int | None = None) :
+        self._mfaCode = mfaCode
 
     def _login(self, smscode: int | None = None) -> dict[Any, Any]:
         """Login to Ezviz API."""
+        
+        # If the mfa/sms code has not been passed in to this function, then see
+        # if one has been set as a property of this object; normally used by the 
+        # command line client.
+        if smscode is None and self._mfaCode is not None:
+            smscode = self._mfaCode
+            print("setting sms code: " + str(smscode))
 
         # Region code to url.
         if len(self._token["api_url"].split(".")) == 1:

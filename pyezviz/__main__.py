@@ -18,6 +18,7 @@ def main() -> Any:
     parser = argparse.ArgumentParser(prog="pyezviz")
     parser.add_argument("-u", "--username", required=True, help="Ezviz username")
     parser.add_argument("-p", "--password", required=True, help="Ezviz Password")
+    parser.add_argument("-m", "--mfa_code", required=False, help="Optional multi-factor authorisation code; the security code sent via email/sms.")
     parser.add_argument(
         "-r",
         "--region",
@@ -160,6 +161,10 @@ Movement is still recorded even if do-not-disturb is enabled.",
     # print("--------------args")
 
     client = EzvizClient(args.username, args.password, args.region)
+    
+    # Pass the mfa code in to the client if we've been given one.
+    if args.mfa_code is not None:
+        client.setMfaCode(int(args.mfa_code))
 
     if args.debug:
         # You must initialize logging, otherwise you'll not see debug output.

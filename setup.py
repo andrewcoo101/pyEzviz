@@ -19,7 +19,9 @@ setuptools.setup(
     ],
     install_requires=[
         'requests',
-        'pandas',
+        # TODO COO 'pandas',
+        # Use this command instead:
+        # sudo apt-get install python3-pandas
         'paho-mqtt',
         'xmltodict',
         'pycryptodome'

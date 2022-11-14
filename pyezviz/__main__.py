@@ -47,6 +47,18 @@ def main() -> Any:
     )
 
     subparsers.add_parser("mqtt", help="Connect to mqtt push notifications")
+    
+    subparsers.add_parser("mqttStart", help='\
+Setup a mqtt connection but do NOT connect. \
+Instead the connection details are printed to screen. \
+It is assumed that a third party program will use these details to connect to the mqtt broker. \
+mqttStop should be used when the mqtt connection is no longer needed.')
+
+    parser_mqtt_stop = subparsers.add_parser("mqttStop", help="Stop the mqtt connection that was started with mqttStart")
+    parser_mqtt_stop.add_argument("--mqttClientId", required=True, help="The value of the mqttClientId returned by mqttStart")
+    parser_mqtt_stop.add_argument("--ezvizPushUrl", required=True, help="The value of the ezvizPushUrl returned by mqttStart")
+    parser_mqtt_stop.add_argument("--ezvizSessionId", required=True, help="The value of the ezvizSessionId returned by mqttStart")
+    parser_mqtt_stop.add_argument("--ezvizUsername", required=True, help="The value of the ezvizUsername returned by mqttStart")
 
     parser_home_defence_mode.add_argument(
         "--mode", required=False, help="Choose mode", choices=["HOME_MODE", "AWAY_MODE"]
@@ -255,6 +267,29 @@ Movement is still recorded even if do-not-disturb is enabled.',
             token = client.login()
             mqtt = MQTTClient(token)
             mqtt.start()
+
+        except Exception as exp:  # pylint: disable=broad-except
+            print(exp)
+        finally:
+            client.close_session()
+            
+    elif args.action == "mqttStart":
+
+        try:
+            token = client.login()
+            mqtt = MQTTClient(token)
+            mqtt.startMqttConnection()
+
+        except Exception as exp:  # pylint: disable=broad-except
+            print(exp)
+        finally:
+            client.close_session()
+
+    elif args.action == "mqttStop":
+
+        try:
+            mqtt = MQTTClient({'service_urls': {'pushAddr': args.ezvizPushUrl}})
+            mqtt.stopMqttConnection(args.mqttClientId, args.ezvizSessionId, args.ezvizUsername)
 
         except Exception as exp:  # pylint: disable=broad-except
             print(exp)

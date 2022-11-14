@@ -100,6 +100,22 @@ class MQTTClient(threading.Thread):
         ezviz_mqtt_client.loop_start()
         return ezviz_mqtt_client
 
+    def _mqttInfo(self):
+        """Print mqtt connection details as a json object."""
+        obj = {
+            "mqttUrl": self._mqtt_data["push_url"],
+            "mqttUsername": MQTT_APP_KEY,
+            "mqttPassword": APP_SECRET,
+            "mqttTopic": f"{MQTT_APP_KEY}/ticket/{self._mqtt_data['ticket']}",
+            "mqttClientId": self._mqtt_data["mqtt_clientid"],
+            "ezvizPushUrl": self._mqtt_data['push_url'],
+            "ezvizSessionId": self._token["session_id"],
+            "ezvizUsername": self._token["username"]
+        }
+        json_data = json.dumps(obj)
+        print(json_data)
+
+
     def _register_ezviz_push(self):
         """Register for push messages."""
 
@@ -144,17 +160,20 @@ class MQTTClient(threading.Thread):
 
         self._mqtt_data["mqtt_clientid"] = json_result["data"]["clientId"]
 
-    def run(self):
-        """Represent the thread's activity, should not be used directly."""
-
+    def _setupSession(self):
         if self._session is None:
             self._session = requests.session()
             self._session.headers.update(
                 {"User-Agent": "okhttp/3.12.1"}
             )  # Android generic user agent.
 
+    def _runSetup(self):
+        self._setupSession()
         self._register_ezviz_push()
         self._start_ezviz_push()
+
+    def run(self):
+        self._runSetup()
         self._mqtt()
 
         try:
@@ -162,6 +181,26 @@ class MQTTClient(threading.Thread):
                 time.sleep(1)
         except KeyboardInterrupt:
             self.stop()
+
+    def startMqttConnection(self):
+        """Setup the mqtt connection but print connection details rather than connecting."""
+        
+        self._runSetup()
+        self._mqttInfo()
+        
+    def stopMqttConnection(self, mqttClientId, ezvizSessionId, ezvizUsername):
+        """Stop the mqtt connection that was previously initiated by startMqttConnection."""
+        
+        payload = {
+            "appKey": MQTT_APP_KEY,
+            "clientId": mqttClientId,
+            "clientType": 5,
+            "sessionId": ezvizSessionId,
+            "username": ezvizUsername
+        }
+        
+        self._setupSession()
+        self._stop(payload)
 
     def start(self):
         """Start mqtt thread."""
@@ -177,7 +216,10 @@ class MQTTClient(threading.Thread):
             "sessionId": self._token["session_id"],
             "username": self._token["username"],
         }
+        
+        self._stop(payload)
 
+    def _stop(self, payload):
         try:
             req = self._session.post(
                 f"https://{self._mqtt_data['push_url']}{API_ENDPOINT_STOP_MQTT}",

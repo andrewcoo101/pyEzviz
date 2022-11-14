@@ -103,7 +103,7 @@ class MQTTClient(threading.Thread):
     def _mqttInfo(self):
         """Print mqtt connection details as a json object."""
         obj = {
-            "mqttUrl": self._mqtt_data["push_url"],
+            "mqttUrl": f"tcp://{self._mqtt_data['push_url']}:1882",
             "mqttUsername": MQTT_APP_KEY,
             "mqttPassword": APP_SECRET,
             "mqttTopic": f"{MQTT_APP_KEY}/ticket/{self._mqtt_data['ticket']}",
